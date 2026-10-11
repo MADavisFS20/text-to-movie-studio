@@ -1,0 +1,33 @@
+{
+  "writer": {
+    "provider": "ollama",
+    "url": "http://127.0.0.1:11434",
+    "model": "qwen-2b-uncensored",
+    "scenes": 6
+  },
+  "video": {
+    "backend": "comfyui",
+    "width": 832,
+    "height": 480,
+    "fps": 24,
+    "style": "cinematic, natural lip motion, realistic room acoustics, subtle camera movement",
+    "continuity": true
+  },
+  "comfyui": {
+    "url": "http://127.0.0.1:8188",
+    "workflow": "workflows/workflow_api.json",
+    "output_node": "",
+    "inputs": {
+      "prompt":      { "node": "6",  "field": "text" },
+      "seed":        { "node": "3",  "field": "seed" },
+      "width":       { "node": "5",  "field": "width" },
+      "height":      { "node": "5",  "field": "height" },
+      "frames":      { "node": "5",  "field": "length" },
+      "first_frame": { "node": "12", "field": "image" }
+    },
+    "frame_rule": { "multiple": 1, "plus": 0 }
+  },
+  "safety": {
+    "allow_image_input": false
+  }
+}

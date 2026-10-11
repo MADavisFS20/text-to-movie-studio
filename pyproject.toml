@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text-to-movie-studio"
+version = "0.1.0"
+description = "Story idea in, MP4 with video and audio out. Pluggable video backends (ComfyUI, mock)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []          # standard library only; needs ffmpeg + ffprobe on PATH
+
+[project.scripts]
+movie-studio = "movie_studio.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["movie_studio*"]
