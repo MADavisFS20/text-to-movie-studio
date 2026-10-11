@@ -69,7 +69,7 @@ def write_plan(idea, cfg, plan_file=None):
     if provider == "file":
         if not plan_file:
             raise scenes.PlanError("writer provider 'file' needs --plan-file")
-        raw = json.loads(Path(plan_file).read_text())
+        raw = json.loads(Path(plan_file).read_text(encoding="utf-8"))
     elif provider == "template":
         raw = _template(idea, n)
     elif provider in ("ollama", "openai"):

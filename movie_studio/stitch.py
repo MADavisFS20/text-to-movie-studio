@@ -53,7 +53,7 @@ def concat(clips, out, work_dir, width, height, fps):
     work.mkdir(parents=True, exist_ok=True)
     norm = [normalise(c, work / f"norm_{i:03d}.mp4", width, height, fps) for i, c in enumerate(clips, 1)]
     listing = work / "concat.txt"
-    listing.write_text("".join(f"file '{p.resolve()}'\n" for p in norm))
+    listing.write_text("".join(f"file '{p.resolve().as_posix()}'\n" for p in norm), encoding="utf-8")
     _run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing),
           "-c", "copy", "-movflags", "+faststart", str(out)])
     return Path(out)

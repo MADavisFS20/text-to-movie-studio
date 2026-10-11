@@ -3,7 +3,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import config, guard, pipeline, scenes
+from . import config, guard, pipeline, scenes, stitch
 from .backends import RenderError
 from .http import HttpError
 from .stitch import FfmpegError
@@ -58,6 +58,29 @@ def cmd_make(a):
     return 0
 
 
+FFMPEG_HELP = ("ffmpeg and ffprobe are required. Install: Debian/Ubuntu `sudo apt install ffmpeg`, macOS `brew install ffmpeg`, "
+               "Windows `winget install Gyan.FFmpeg` (then open a new terminal), Termux `pkg install ffmpeg`.")
+
+
+def cmd_selftest(a):
+    """Plan + render + stitch with the template writer and mock renderer; passes only if the MP4 has video AND audio."""
+    import tempfile
+    if not (shutil.which("ffmpeg") and shutil.which("ffprobe")):
+        print("selftest: FAIL. " + FFMPEG_HELP)
+        return 1
+    cfg = config.load()
+    cfg["writer"].update(provider="template", scenes=2)
+    cfg["video"].update(backend="mock", width=160, height=96, fps=12)
+    with tempfile.TemporaryDirectory() as tmp:
+        run = Path(tmp) / "selftest"
+        pipeline.make_plan("A short test. Another short test.", cfg, run)
+        final = pipeline.render(run, cfg, log=lambda *_: None)
+        s = stitch.streams(final)
+    ok = s["video"] and s["audio"]
+    print(f"selftest: {'PASS' if ok else 'FAIL'} (video={s['video']}, audio={s['audio']}, {s['duration']:.1f}s)")
+    return 0 if ok else 1
+
+
 def cmd_doctor(a):
     cfg = _cfg(a)
     ok = True
@@ -65,6 +88,8 @@ def cmd_doctor(a):
         found = shutil.which(tool)
         print(f"{tool}: {found or 'MISSING'}")
         ok &= bool(found)
+    if not ok:
+        print(FFMPEG_HELP)
     print(f"writer: {cfg['writer']['provider']} ({cfg['writer']['url']}, model {cfg['writer']['model']})")
     print(f"video backend: {cfg['video']['backend']}")
     if cfg["video"]["backend"] == "comfyui":
@@ -102,6 +127,9 @@ def main(argv=None):
     _add_common(p)
     _add_render(p)
     p.set_defaults(fn=cmd_make)
+
+    p = sub.add_parser("selftest", help="render a tiny mock movie and verify it has video and audio")
+    p.set_defaults(fn=cmd_selftest)
 
     p = sub.add_parser("doctor", help="check ffmpeg and your config")
     _add_common(p)

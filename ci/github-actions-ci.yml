@@ -1,0 +1,36 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - name: Install ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg -y --no-progress
+      - name: Self-test
+        run: python -m movie_studio selftest
+      - name: Unit tests
+        run: python -m unittest discover -s tests -t .
+      - name: Installer script (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: ./scripts/install.sh
+      - name: Installer script (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/install.ps1

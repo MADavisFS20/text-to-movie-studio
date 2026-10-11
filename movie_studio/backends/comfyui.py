@@ -55,7 +55,7 @@ class ComfyUIBackend(Backend):
         wf = Path(self.c["workflow"])
         if not wf.exists():
             raise RenderError(f"workflow file not found: {wf} (export one from ComfyUI with 'Save (API Format)')")
-        self.template = json.loads(wf.read_text())
+        self.template = json.loads(wf.read_text(encoding="utf-8"))
         if "nodes" in self.template:
             raise RenderError("this workflow is in the UI format; re-export it with 'Save (API Format)'")
         self.supports_first_frame = "first_frame" in self.mapping

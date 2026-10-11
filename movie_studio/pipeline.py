@@ -18,13 +18,13 @@ def make_plan(idea, cfg, run_dir, plan_file=None):
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     plan = writer.write_plan(idea, cfg, plan_file)
-    (run_dir / "idea.txt").write_text(idea)
-    (run_dir / "plan.json").write_text(json.dumps(plan.to_dict(), indent=2))
+    (run_dir / "idea.txt").write_text(idea, encoding="utf-8")
+    (run_dir / "plan.json").write_text(json.dumps(plan.to_dict(), indent=2), encoding="utf-8")
     return plan
 
 
 def load_plan(run_dir, cfg):
-    data = json.loads((Path(run_dir) / "plan.json").read_text())
+    data = json.loads((Path(run_dir) / "plan.json").read_text(encoding="utf-8"))
     v = cfg["video"]
     plan = scenes.parse_plan(data, min_s=v["min_seconds"], max_s=v["max_seconds"])
     return scenes.finalize(plan, v["style"])  # re-run the guard on exactly what will be rendered
@@ -86,5 +86,5 @@ def render(run_dir, cfg, first_frame=None, confirm_fictional=False, log=print):
     info = stitch.streams(final)
     manifest.update(final=str(final.relative_to(run_dir)), duration_s=round(info["duration"], 2),
                     has_video=info["video"], has_audio=info["audio"])
-    (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return final

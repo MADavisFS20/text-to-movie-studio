@@ -53,5 +53,5 @@ def load(path=None):
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"config file not found: {p}")
-        _merge(cfg, json.loads(p.read_text()))
+        _merge(cfg, json.loads(p.read_text(encoding="utf-8")))
     return cfg

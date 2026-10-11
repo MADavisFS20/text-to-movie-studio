@@ -20,7 +20,7 @@ idea ──► scene writer (LLM) ──► plan.json ──► video backend �
 
 | Part | State |
 |---|---|
-| Scene writer, guard, plan parsing, stitching, CLI | Tested (26 tests) |
+| Scene writer, guard, plan parsing, stitching, CLI | Tested on Android/Termux only (26 tests + `selftest`). Linux, macOS and Windows are **not yet verified**; `ci/github-actions-ci.yml` is ready to enable |
 | Mock backend (colour card + tone) | Tested end to end, final MP4 has H.264 video and AAC audio |
 | ComfyUI backend | Tested against a **fake** ComfyUI server only. **Never run against a real model.** |
 | Ollama / OpenAI-compatible writer | Tested against fake servers only |
@@ -29,18 +29,20 @@ idea ──► scene writer (LLM) ──► plan.json ──► video backend �
 **No video model is included and none is the default.** The default backend is `mock`, which only proves the
 plumbing works. You choose and install the model (see "Pick a model" below).
 
-## Quick start (works on a phone, no GPU, no model)
+## Install and run (any device)
+
+Full guide for Linux, macOS, Windows and Termux: **[`docs/INSTALL.md`](docs/INSTALL.md)**. The short version:
 
 ```bash
-# Termux:  pkg install python ffmpeg git
+gh auth login                       # the repo is private; choose HTTPS
 git clone https://github.com/MADavisFS20/text-to-movie-studio.git
 cd text-to-movie-studio
-python3 -m movie_studio doctor
+bash scripts/install.sh             # Windows: powershell -ExecutionPolicy Bypass -File scripts\install.ps1
 python3 -m movie_studio make "$(cat examples/idea.txt)" --writer template --scenes 3
 ```
-
-That writes `runs/.../movie.mp4`: coloured clips with a different tone per scene. It proves the pipeline works.
-`--writer template` skips the language model. Install as a command with `pip install -e .` to get `movie-studio`.
+You need Python 3.9+ and ffmpeg. The installer checks both, then renders a tiny mock movie and fails unless the
+MP4 has video **and** audio. The movie lands in `runs/<time>-<slug>/movie.mp4` (coloured clips with a tone per
+scene: it proves the pipeline works, it is not real video). Real video needs a GPU and a licensed model, see below.
 
 ## Commands
 
@@ -142,7 +144,7 @@ movie_studio/
   stitch.py      ffprobe / last frame / normalise / concat
   pipeline.py    plan -> render -> movie
   cli.py
-tests/  workflows/  scripts/  examples/
+tests/  workflows/  scripts/  examples/  docs/  models/  training/  ci/
 ```
 
 To add a backend, subclass `Backend`, implement `render(scene, out_path, first_frame)` so it writes an MP4 with

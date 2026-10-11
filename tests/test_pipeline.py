@@ -48,12 +48,12 @@ class MockEndToEnd(unittest.TestCase):
         cfg = cfg_for(self.tmp)
         run = self.tmp / "run"
         (run).mkdir()
-        (run / "plan.json").write_text(json.dumps(PLAN))
+        (run / "plan.json").write_text(json.dumps(PLAN), encoding="utf-8")
         final = pipeline.render(run, cfg, log=lambda *_: None)
         s = stitch.streams(final)
         self.assertTrue(s["video"] and s["audio"])
         self.assertAlmostEqual(s["duration"], 6.0, delta=0.6)
-        m = json.loads((run / "manifest.json").read_text())
+        m = json.loads((run / "manifest.json").read_text(encoding="utf-8"))
         self.assertTrue(m["has_video"] and m["has_audio"])
         self.assertEqual(len(m["clips"]), 3)
         self.assertTrue((run / "frames" / "scene_001_last.png").exists())
@@ -70,7 +70,7 @@ class MockEndToEnd(unittest.TestCase):
         cfg = cfg_for(self.tmp)
         run = self.tmp / "run3"
         run.mkdir()
-        (run / "plan.json").write_text(json.dumps(PLAN))
+        (run / "plan.json").write_text(json.dumps(PLAN), encoding="utf-8")
         pipeline.render(run, cfg, log=lambda *_: None)
         logs = []
         pipeline.render(run, cfg, log=logs.append)
@@ -82,7 +82,7 @@ class MockEndToEnd(unittest.TestCase):
         run.mkdir()
         bad = json.loads(json.dumps(PLAN))
         bad["scenes"][1]["action"] = "a 14-year-old packs a bag"
-        (run / "plan.json").write_text(json.dumps(bad))
+        (run / "plan.json").write_text(json.dumps(bad), encoding="utf-8")
         with self.assertRaises(guard.GuardError):
             pipeline.render(run, cfg, log=lambda *_: None)
         self.assertFalse((run / "clips").exists())
@@ -91,7 +91,7 @@ class MockEndToEnd(unittest.TestCase):
         cfg = cfg_for(self.tmp)
         run = self.tmp / "run5"
         run.mkdir()
-        (run / "plan.json").write_text(json.dumps(PLAN))
+        (run / "plan.json").write_text(json.dumps(PLAN), encoding="utf-8")
         img = self.tmp / "a.png"
         img.write_bytes(b"x")
         with self.assertRaises(PermissionError):
@@ -234,7 +234,7 @@ class ComfyTests(unittest.TestCase):
         self.addCleanup(self.srv.server_close)
         self.addCleanup(self.srv.shutdown)
         wf = self.tmp / "wf.json"
-        wf.write_text(json.dumps(WORKFLOW))
+        wf.write_text(json.dumps(WORKFLOW), encoding="utf-8")
         self.cfg = cfg_for(self.tmp, video={"backend": "comfyui", "width": 160, "height": 96, "fps": 12},
                            comfyui={"url": self.url, "workflow": str(wf), "inputs": MAPPING, "poll_s": 0.05,
                                     "timeout_s": 20, "frame_rule": {"multiple": 8, "plus": 1}})
@@ -262,7 +262,7 @@ class ComfyTests(unittest.TestCase):
     def test_full_pipeline_through_comfy_backend(self):
         run = self.tmp / "run"
         run.mkdir()
-        (run / "plan.json").write_text(json.dumps(PLAN))
+        (run / "plan.json").write_text(json.dumps(PLAN), encoding="utf-8")
         final = pipeline.render(run, self.cfg, log=lambda *_: None)
         s = stitch.streams(final)
         self.assertTrue(s["video"] and s["audio"])
@@ -280,7 +280,7 @@ class ComfyTests(unittest.TestCase):
 
     def test_ui_format_workflow_is_rejected(self):
         wf = self.tmp / "ui.json"
-        wf.write_text(json.dumps({"nodes": [], "links": []}))
+        wf.write_text(json.dumps({"nodes": [], "links": []}), encoding="utf-8")
         self.cfg["comfyui"]["workflow"] = str(wf)
         with self.assertRaises(RenderError):
             get_backend(self.cfg)
